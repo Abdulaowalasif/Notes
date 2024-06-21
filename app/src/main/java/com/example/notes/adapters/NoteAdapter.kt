@@ -44,8 +44,5 @@ class NoteAdapter() :
         override fun areContentsTheSame(oldItem: Notes, newItem: Notes): Boolean {
             return oldItem == newItem
         }
-
     }
-
-
 }

@@ -1,12 +1,12 @@
 package com.example.notes.activity
 
+import android.content.Context
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import com.example.notes.R
 import com.example.notes.database.NoteDatabase
@@ -17,10 +17,10 @@ import com.example.notes.viewmodels.NoteViewModel
 import com.example.notes.viewmodels.NotesViewModelFactory
 
 class EditNote : AppCompatActivity() {
-    var id =0
-    private var title=""
-    private var desc=""
-        private val binding: ActivityEditNoteBinding by lazy {
+    var id = 0
+    private var title = ""
+    private var desc = ""
+    private val binding: ActivityEditNoteBinding by lazy {
         ActivityEditNoteBinding.inflate(layoutInflater)
     }
 
@@ -29,12 +29,11 @@ class EditNote : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         noteViewModel = ViewModelProvider(
-            this,
-            NotesViewModelFactory(NoteRepo(NoteDatabase(this)))
+            this, NotesViewModelFactory(NoteRepo(NoteDatabase(this)))
         )[NoteViewModel::class.java]
 
-         title = intent.getStringExtra("title").toString()
-         desc = intent.getStringExtra("desc").toString()
+        title = intent.getStringExtra("title").toString()
+        desc = intent.getStringExtra("desc").toString()
         id = (intent.getStringExtra("id"))!!.toInt()
 
         binding.editNoteTitle.setText(title)
@@ -43,14 +42,24 @@ class EditNote : AppCompatActivity() {
         binding.editNoteFab.setOnClickListener {
             val edtTitle = binding.editNoteTitle.text.toString()
             val edtDesc = binding.editNoteDesc.text.toString()
-            noteViewModel.updateNote(
-                Notes(
-                    id = id,
-                    noteTitle = edtTitle,
-                    noteDesc = edtDesc
+
+
+            showDialog(this, "update")?.setNegativeButton(
+                "No"
+            ) { _, _ -> }?.setPositiveButton(
+                "Yes"
+            ) { _, _ ->
+                noteViewModel.updateNote(
+                    Notes(
+                        id = id, noteTitle = edtTitle, noteDesc = edtDesc
+                    )
                 )
-            )
-            finish()
+
+                finish()
+
+            }?.show()
+
+
         }
     }
 
@@ -60,9 +69,34 @@ class EditNote : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        noteViewModel.deleteNote(Notes(id = id, noteDesc = desc, noteTitle = title))
-        finish()
+
+        showDialog(this, "delete")?.setNegativeButton(
+            "No"
+        ) { _, _ -> }?.setPositiveButton(
+            "Yes"
+        ) { _, _ ->
+            noteViewModel.deleteNote(
+                Notes(
+                    id = id,
+                    noteDesc = desc,
+                    noteTitle = title
+                )
+            )
+
+            finish()
+        }?.show()
+
         return true
     }
+}
 
+fun showDialog(context: Context, title: String): AlertDialog.Builder? {
+
+    val dialog = AlertDialog.Builder(context)
+        .setIcon(R.drawable.baseline_delete_24)
+        .setTitle("Do you want to $title?")
+        .setMessage("Are you sure?")
+        .setCancelable(true)
+
+    return dialog
 }
