@@ -24,6 +24,7 @@ class MainActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
     private lateinit var binding: ActivityMainBinding
     private lateinit var adapter: NoteAdapter
     private lateinit var noteViewModel: NoteViewModel
+    private val isFocused=false
 
     @SuppressLint("NotifyDataSetChanged")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,8 +43,8 @@ class MainActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
         val layout = StaggeredGridLayoutManager(2, VERTICAL)
         binding.homeRecyclerView.layoutManager = layout
 
-        noteViewModel.getAllNotes().observe(this) {
-            adapter.submitList(it)
+        noteViewModel.getAllNotes().observe(this) { list ->
+            adapter.submitList(list)
             adapter.notifyDataSetChanged()
         }
 
@@ -52,9 +53,9 @@ class MainActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
         }
     }
 
-    @SuppressLint("NotifyDataSetChanged")
+    @SuppressLint("NotifyDataSetChanged", "DefaultLocale")
     fun searchQuery(query: String?) {
-        val search = "%$query"
+        val search = if (!query.isNullOrBlank()) "%${query.toLowerCase()}%" else "%"
 
         noteViewModel.searchNote(search).observe(this) { list ->
             adapter.submitList(list)

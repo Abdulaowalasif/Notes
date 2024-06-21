@@ -5,6 +5,7 @@ import android.content.DialogInterface
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
@@ -43,23 +44,29 @@ class EditNote : AppCompatActivity() {
             val edtTitle = binding.editNoteTitle.text.toString()
             val edtDesc = binding.editNoteDesc.text.toString()
 
+            if (!edtTitle.isNullOrEmpty() && !edtDesc.isNullOrEmpty()) {
+                if (title != edtTitle || desc != edtDesc) {
+                    showDialog(this, "update")?.setNegativeButton(
+                        "No"
+                    ) { _, _ -> }?.setPositiveButton(
+                        "Yes"
+                    ) { _, _ ->
+                        noteViewModel.updateNote(
+                            Notes(
+                                id = id, noteTitle = edtTitle, noteDesc = edtDesc
+                            )
+                        )
+                        finish()
 
-            showDialog(this, "update")?.setNegativeButton(
-                "No"
-            ) { _, _ -> }?.setPositiveButton(
-                "Yes"
-            ) { _, _ ->
-                noteViewModel.updateNote(
-                    Notes(
-                        id = id, noteTitle = edtTitle, noteDesc = edtDesc
-                    )
-                )
-
-                finish()
-
-            }?.show()
-
-
+                    }?.show()
+                }
+            } else {
+                if (edtTitle.isEmpty()) {
+                    Toast.makeText(this, "Please enter title", Toast.LENGTH_SHORT).show()
+                } else if (edtDesc.isEmpty()) {
+                    Toast.makeText(this, "Please enter some notes", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 
@@ -88,15 +95,17 @@ class EditNote : AppCompatActivity() {
 
         return true
     }
+
+    private fun showDialog(context: Context, title: String): AlertDialog.Builder? {
+
+        val dialog = AlertDialog.Builder(context)
+            .setIcon(R.drawable.baseline_delete_24)
+            .setTitle("Do you want to $title?")
+            .setMessage("Are you sure?")
+            .setCancelable(true)
+
+        return dialog
+    }
 }
 
-fun showDialog(context: Context, title: String): AlertDialog.Builder? {
 
-    val dialog = AlertDialog.Builder(context)
-        .setIcon(R.drawable.baseline_delete_24)
-        .setTitle("Do you want to $title?")
-        .setMessage("Are you sure?")
-        .setCancelable(true)
-
-    return dialog
-}
